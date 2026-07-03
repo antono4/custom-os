@@ -3,37 +3,46 @@
  * =============================================================================
  */
 
-#include <kernel.h>
+#include "kernel.h"
 
-#define IDT_ENTRIES 256
+#define IDT_SIZE 256
 
-struct idt_entry {
+typedef struct idt_entry {
     uint16_t base_low;
     uint16_t selector;
     uint8_t zero;
     uint8_t flags;
     uint16_t base_high;
-} __attribute__((packed));
+} __attribute__((packed)) idt_entry_t;
 
-struct idt_ptr {
+typedef struct idt_ptr {
     uint16_t limit;
     uint32_t base;
-} __attribute__((packed));
+} __attribute__((packed)) idt_ptr_t;
 
-static struct idt_entry idt[IDT_ENTRIES];
-static struct idt_ptr idt_ptr;
+static idt_entry_t idt[IDT_SIZE];
+static idt_ptr_t idt_ptr;
 
-/* Set IDT gate */
-void idt_set_gate(uint8_t num, uint32_t base, uint16_t selector, uint8_t flags) {
-    idt[num].base_low = (base & 0xFFFF);
+extern void idt_flush(uint32_t);
+
+void idt_set_gate(int num, uint32_t base, uint16_t selector, uint8_t flags) {
+    idt[num].base_low = base & 0xFFFF;
     idt[num].base_high = (base >> 16) & 0xFFFF;
     idt[num].selector = selector;
-    idt[num].zero = 0;
     idt[num].flags = flags;
+    idt[num].zero = 0;
 }
 
-/* Remap PIC */
-static void pic_remap(void) {
+void idt_init(void) {
+    idt_ptr.limit = sizeof(idt) - 1;
+    idt_ptr.base = (uint32_t)&idt;
+    
+    /* Fill all entries with null */
+    for (int i = 0; i < IDT_SIZE; i++) {
+        idt_set_gate(i, 0, 0, 0);
+    }
+    
+    /* Remap PIC */
     outb(0x20, 0x11);
     outb(0xA0, 0x11);
     outb(0x21, 0x20);
@@ -44,32 +53,7 @@ static void pic_remap(void) {
     outb(0xA1, 0x01);
     outb(0x21, 0x00);
     outb(0xA1, 0x00);
-}
-
-/* Common interrupt handler */
-extern void isr_common(void);
-
-/* Initialize IDT */
-void idt_init(void) {
-    idt_ptr.limit = sizeof(idt) - 1;
-    idt_ptr.base = (uint32_t)&idt;
-    
-    /* Remap PIC */
-    pic_remap();
-    
-    /* Clear IDT */
-    for (int i = 0; i < IDT_ENTRIES; i++) {
-        idt_set_gate(i, 0, 0, 0);
-    }
-    
-    /* Set some default handlers */
-    for (int i = 0; i < 32; i++) {
-        idt_set_gate(i, (uint32_t)isr_common, 0x08, 0x8E);
-    }
     
     /* Load IDT */
-    __asm__ volatile ("lidt %0" : : "m"(idt_ptr));
-    
-    /* Enable interrupts */
-    sti();
+    idt_flush((uint32_t)&idt_ptr);
 }

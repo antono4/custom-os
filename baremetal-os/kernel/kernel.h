@@ -11,6 +11,7 @@ typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef unsigned long long uint64_t;
+typedef unsigned long size_t;
 
 /* Boolean */
 #define true 1
@@ -51,6 +52,7 @@ static inline void mb(void) {
 void gdt_init(void);
 void idt_init(void);
 void memory_init(void);
+void* kmalloc(size_t size);
 uint32_t get_total_memory(void);
 void vfs_init(void);
 

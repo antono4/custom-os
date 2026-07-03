@@ -5,15 +5,17 @@
  */
 
 OUTPUT_FORMAT("elf32-i386")
-ENTRY(_start)
+ENTRY(stage2_start)
 
 SECTIONS
 {
-    . = 0x10000;  /* Kernel loads at 1MB */
+    . = 0x10000;
     
     .text : {
-        *(.boot)
         *(.text)
+    }
+    
+    .rodata : {
         *(.rodata)
     }
     

@@ -3,7 +3,7 @@
  * =============================================================================
  */
 
-#include <kernel.h>
+#include "kernel.h"
 
 struct gdt_entry {
     uint16_t limit_low;
@@ -58,12 +58,12 @@ void gdt_init(void) {
     
     /* Reload segment registers */
     __asm__ volatile (
-        "movw $0x10, %%ax\n\t"
-        "movw %%ax, %%ds\n\t"
-        "movw %%ax, %%es\n\t"
-        "movw %%ax, %%fs\n\t"
-        "movw %%ax, %%gs\n\t"
-        "movw %%ax, %%ss\n\t"
+        "movw $0x10, %ax\n\t"
+        "movw %ax, %ds\n\t"
+        "movw %ax, %es\n\t"
+        "movw %ax, %fs\n\t"
+        "movw %ax, %gs\n\t"
+        "movw %ax, %ss\n\t"
         "ljmp $0x08, $next\n\t"
         "next:"
     );

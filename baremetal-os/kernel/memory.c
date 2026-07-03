@@ -3,7 +3,7 @@
  * =============================================================================
  */
 
-#include <kernel.h>
+#include "kernel.h"
 
 /* Physical memory information */
 static uint32_t total_memory = 0;
@@ -39,7 +39,8 @@ void memory_init(void) {
 }
 
 /* Allocate a page of physical memory */
-void* kmalloc(void) {
+void* kmalloc(size_t size) {
+    (void)size;  /* Unused for now */
     for (int i = 0; i < page_count; i++) {
         if (!pages[i].used) {
             pages[i].used = 1;

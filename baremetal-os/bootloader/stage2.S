@@ -3,92 +3,88 @@
 ; =============================================================================
 ; Stage 2 bootloader: Switches to protected mode and loads kernel
 ; Uses GRUB multiboot specification
+; Syntax: NASM (ELF format for linking)
 
-.code16
-.section .boot
+extern kernel_main
 
-.global stage2_start
+section .text
+
 stage2_start:
     ; Set up GDT
     cli
-    lgdt gdt_descriptor
+    lgdt [gdt_descriptor]
     
     ; Enable A20 line
-    inb $0x92, %al
-    or %al, 2
-    outb %al, $0x92
+    in al, 0x92
+    or al, 2
+    out 0x92, al
     
     ; Switch to protected mode
-    movl %cr0, %eax
-    orl $1, %eax
-    movl %eax, %cr0
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
     
     ; Far jump to set CS
-    ljmp $0x08, $0x10000
+    jmp 0x08:protected_start
 
-.align 16
+; GDT
 gdt_start:
-    ; Null descriptor
-    .quad 0x0000000000000000
-    
-    ; Code segment descriptor
-    .word 0xFFFF      ; Limit
-    .word 0x0000      ; Base (low)
-    .byte 0x00        ; Base (middle)
-    .byte 0x9A        ; Access byte (present, ring 0, code, readable)
-    .byte 0xCF        ; Flags (4K gran, 32-bit, limit hi)
-    .byte 0x00        ; Base (high)
-    
-    ; Data segment descriptor
-    .word 0xFFFF      ; Limit
-    .word 0x0000      ; Base (low)
-    .byte 0x00        ; Base (middle)
-    .byte 0x92        ; Access byte (present, ring 0, data, writable)
-    .byte 0xCF        ; Flags (4K gran, 32-bit, limit hi)
-    .byte 0x00        ; Base (high)
+    dq 0x0000000000000000
+    dw 0xFFFF
+    dw 0x0000
+    db 0x00
+    db 0x9A
+    db 0xCF
+    db 0x00
+    dw 0xFFFF
+    dw 0x0000
+    db 0x00
+    db 0x92
+    db 0xCF
+    db 0x00
 gdt_end:
 
 gdt_descriptor:
-    .word gdt_end - gdt_start - 1
-    .long gdt_start
+    dw gdt_end - gdt_start - 1
+    dd gdt_start
 
-; Protected mode entry point
-.code32
-.section .pmode
-
-.global protected_start
 protected_start:
     ; Set up segment registers
-    movw $0x10, %ax
-    movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
-    movw %ax, %ss
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
     
     ; Set up stack
-    movl $0x90000, %esp
+    mov esp, 0x90000
+    
+    ; Point to video memory
+    mov ax, 0xB800
+    mov gs, ax
     
     ; Print message
-    movl $msg_loaded, %esi
+    mov esi, msg_loaded
     call print_pm
     
-    ; Jump to kernel (placeholder)
-    jmp kernel_start
+    ; Jump to kernel
+    jmp kernel_main
 
 print_pm:
     lodsb
-    test %al, %al
+    test al, al
     jz done_pm
-    movb $0x0E, %ah
-    int $0x10
+    ; VGA text mode
+    xor ebx, ebx
+    mov [gs:ebx], al
+    inc ebx
+    mov byte [gs:ebx], 0x07
+    inc ebx
     jmp print_pm
 done_pm:
     ret
 
-kernel_start:
-    hlt
-    jmp kernel_start
+msg_loaded: db "NanoOS Stage 2: Protected Mode Enabled", 0
 
-msg_loaded:
-    .asciz "\r\nNanoOS Stage 2: Protected Mode Enabled\r\n"
+times 8192-($-$$) db 0

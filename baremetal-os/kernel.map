@@ -1,0 +1,170 @@
+
+Discarded input sections
+
+ .comment       0x00000000       0x20 kernel/main.o
+ .eh_frame      0x00000000       0x34 kernel/main.o
+ .comment       0x00000000       0x20 kernel/gdt.o
+ .eh_frame      0x00000000       0x58 kernel/gdt.o
+ .comment       0x00000000       0x20 kernel/idt.o
+ .eh_frame      0x00000000       0x78 kernel/idt.o
+ .comment       0x00000000       0x20 kernel/memory.o
+ .eh_frame      0x00000000       0xb8 kernel/memory.o
+ .comment       0x00000000       0x20 kernel/vfs.o
+ .eh_frame      0x00000000       0xb8 kernel/vfs.o
+ .comment       0x00000000       0x20 kernel/devices/keyboard.o
+ .eh_frame      0x00000000       0x98 kernel/devices/keyboard.o
+ .comment       0x00000000       0x20 kernel/devices/timer.o
+ .eh_frame      0x00000000       0x98 kernel/devices/timer.o
+ .comment       0x00000000       0x20 libc/stdio.o
+ .eh_frame      0x00000000      0x100 libc/stdio.o
+ .comment       0x00000000       0x20 libc/string.o
+ .eh_frame      0x00000000       0xb8 libc/string.o
+ .comment       0x00000000       0x20 shell/shell.o
+ .eh_frame      0x00000000       0x98 shell/shell.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+                0x00010000                        . = 0x10000
+
+.text           0x00010000     0x2d74
+ *(.text)
+ .text          0x00010000     0x2000 bootloader/stage2.o
+ .text          0x00012000        0x8 bootloader/idt_flush.o
+                0x00012000                idt_flush
+ .text          0x00012008       0x92 kernel/main.o
+                0x00012008                kernel_main
+ .text          0x0001209a      0x12c kernel/gdt.o
+                0x0001211f                gdt_init
+ .text          0x000121c6      0x15b kernel/idt.o
+                0x000121e5                idt_set_gate
+                0x00012246                idt_init
+ .text          0x00012321      0x138 kernel/memory.o
+                0x00012321                memory_init
+                0x00012392                kmalloc
+                0x000123de                kfree
+                0x0001240e                get_total_memory
+                0x00012418                get_free_memory
+ .text          0x00012459      0x1a0 kernel/vfs.o
+                0x00012459                vfs_init
+                0x000124ca                vfs_create_file
+                0x0001258a                vfs_create_directory
+                0x000125b9                vfs_get_root
+                0x000125c3                vfs_list_directory
+ .text          0x000125f9       0x47 kernel/devices/keyboard.o
+                0x00012616                keyboard_init
+                0x0001261c                keyboard_read
+                0x0001262b                keyboard_available
+ .text          0x00012640       0x86 kernel/devices/timer.o
+                0x0001265f                timer_init
+                0x000126a9                timer_handler
+                0x000126bc                timer_get_ticks
+ .text          0x000126c6      0x302 libc/stdio.o
+                0x000126e8                terminal_setcolor
+                0x00012700                terminal_init
+                0x0001276a                terminal_putchar
+                0x00012859                print_string
+                0x00012884                print_int
+                0x00012933                print_hex
+ .text          0x000129c8      0x136 libc/string.o
+                0x000129c8                strlen
+                0x000129ef                memset
+                0x00012a22                memcpy
+                0x00012a63                strcmp
+                0x00012ac4                strcpy
+ .text          0x00012afe      0x276 shell/shell.o
+                0x00012bf2                shell_init
+                0x00012c26                shell_handle_command
+
+.iplt           0x00012d74        0x0
+ .iplt          0x00012d74        0x0 bootloader/stage2.o
+
+.rodata         0x00012d74      0x130
+ *(.rodata)
+ .rodata        0x00012d74       0x5c kernel/main.o
+ .rodata        0x00012dd0       0xd4 shell/shell.o
+
+.rel.dyn        0x00012ea4        0x0
+ .rel.got       0x00012ea4        0x0 bootloader/stage2.o
+ .rel.iplt      0x00012ea4        0x0 bootloader/stage2.o
+
+.data           0x00012ea4        0x1
+ *(.data)
+ .data          0x00012ea4        0x0 kernel/main.o
+ .data          0x00012ea4        0x0 kernel/gdt.o
+ .data          0x00012ea4        0x0 kernel/idt.o
+ .data          0x00012ea4        0x0 kernel/memory.o
+ .data          0x00012ea4        0x0 kernel/vfs.o
+ .data          0x00012ea4        0x0 kernel/devices/keyboard.o
+ .data          0x00012ea4        0x0 kernel/devices/timer.o
+ .data          0x00012ea4        0x1 libc/stdio.o
+ .data          0x00012ea5        0x0 libc/string.o
+ .data          0x00012ea5        0x0 shell/shell.o
+
+.got            0x00012ea8        0x0
+ .got           0x00012ea8        0x0 bootloader/stage2.o
+
+.got.plt        0x00012ea8        0x0
+ .got.plt       0x00012ea8        0x0 bootloader/stage2.o
+
+.igot.plt       0x00012ea8        0x0
+ .igot.plt      0x00012ea8        0x0 bootloader/stage2.o
+
+.bss            0x00012ec0     0x289c
+ *(.bss)
+ .bss           0x00012ec0        0x0 kernel/main.o
+ .bss           0x00012ec0       0x2e kernel/gdt.o
+ *fill*         0x00012eee       0x12 
+ .bss           0x00012f00      0x806 kernel/idt.o
+ *fill*         0x00013706       0x1a 
+ .bss           0x00013720     0x2024 kernel/memory.o
+ .bss           0x00015744        0x4 kernel/vfs.o
+ .bss           0x00015748        0x0 kernel/devices/keyboard.o
+ .bss           0x00015748        0x4 kernel/devices/timer.o
+ .bss           0x0001574c        0x8 libc/stdio.o
+ .bss           0x00015754        0x0 libc/string.o
+ .bss           0x00015754        0x8 shell/shell.o
+
+/DISCARD/
+ *(.comment)
+ *(.eh_frame)
+LOAD bootloader/stage2.o
+LOAD bootloader/idt_flush.o
+LOAD kernel/main.o
+LOAD kernel/gdt.o
+LOAD kernel/idt.o
+LOAD kernel/memory.o
+LOAD kernel/vfs.o
+LOAD kernel/devices/keyboard.o
+LOAD kernel/devices/timer.o
+LOAD libc/stdio.o
+LOAD libc/string.o
+LOAD shell/shell.o
+OUTPUT(kernel.elf elf32-i386)
+
+.note.GNU-stack
+                0x00000000        0x0
+ .note.GNU-stack
+                0x00000000        0x0 kernel/main.o
+ .note.GNU-stack
+                0x00000000        0x0 kernel/gdt.o
+ .note.GNU-stack
+                0x00000000        0x0 kernel/idt.o
+ .note.GNU-stack
+                0x00000000        0x0 kernel/memory.o
+ .note.GNU-stack
+                0x00000000        0x0 kernel/vfs.o
+ .note.GNU-stack
+                0x00000000        0x0 kernel/devices/keyboard.o
+ .note.GNU-stack
+                0x00000000        0x0 kernel/devices/timer.o
+ .note.GNU-stack
+                0x00000000        0x0 libc/stdio.o
+ .note.GNU-stack
+                0x00000000        0x0 libc/string.o
+ .note.GNU-stack
+                0x00000000        0x0 shell/shell.o
