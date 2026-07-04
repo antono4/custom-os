@@ -7,13 +7,17 @@
   <img src="https://img.shields.io/github/forks/antono4/custom-os?style=flat-square" alt="Forks">
 </p>
 
-> Projek educativo untuk membangun sistem operasi dari nol dan distribusi Linux kustom menggunakan metodologi Linux From Scratch (LFS).
+> Projek educativo untuk membangun sistem operasi dari nol dan distribusi Linux kustom menggunakan metodologi Linux From Scratch (LFS). Tersedia versi CLI dan GUI!
 
 ## 📖 Daftar Isi
 
 - [Tentang Projek](#tentang-projek)
 - [Bare-metal OS](#-bare-metal-os-os-dari-nol)
+  - [CLI Version](#-cli-version)
+  - [GUI Version](#-gui-version)
 - [Custom Linux Distribution](#-custom-linux-distribution)
+  - [CLI Version](#-cli-version-1)
+  - [GUI Version](#-gui-version-1)
 - [Mulai Cepat](#-mulai-cepat)
 - [Fitur](#-fitur)
 - [Struktur Direktori](#-struktur-direktori)
@@ -24,18 +28,28 @@
 
 ## 🎯 Tentang Projek
 
-Projek **Custom-OS** berisi dua implementasi untuk memahami dan membangun sistem operasi:
+Projek **Custom-OS** berisi implementasi untuk memahami dan membangun sistem operasi:
 
 | Proyek | Deskripsi | Kompleksitas | Cocok Untuk |
 |--------|-----------|--------------|-------------|
 | **Bare-metal OS** | OS dari nol tanpa kernel Linux | ⭐⭐ | Pembelajaran |
 | **Custom Linux Distro** | Distro Linux menggunakan LFS | ⭐⭐⭐⭐⭐ | Produksi |
 
+Setiap projek tersedia dalam **versi CLI** dan **versi GUI**!
+
 ---
 
 ## 💻 Bare-metal OS (OS dari Nol)
 
-OS sederhana **NanoOS** yang dibuat dari awal tanpa menggunakan kernel Linux. Projek ini dirancang untuk pembelajaran tentang bagaimana sistem operasi bekerja di level paling rendah.
+OS sederhana **NanoOS** yang dibuat dari awal tanpa menggunakan kernel Linux. Tersedia dalam versi CLI dan GUI.
+
+### 🖥️ CLI Version
+
+Versi command-line interface untuk pembelajaran konsep OS dasar.
+
+### 🎨 GUI Version
+
+Versi graphical user interface dengan window manager dan aplikasi desktop.
 
 ### Arsitektur
 
