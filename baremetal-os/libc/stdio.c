@@ -3,122 +3,97 @@
  * =============================================================================
  */
 
-#include <stdint.h>
+#include "kernel.h"
 
-/* VGA text mode */
 #define VGA_BASE 0xB8000
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
 
-static uint16_t* vga_buffer = (uint16_t*)VGA_BASE;
-static int cursor_x = 0;
-static int cursor_y = 0;
+static size_t terminal_row = 0;
+static size_t terminal_col = 0;
+static uint8_t terminal_color = 0x07;
 
-/* Print character to screen */
-void print_char(char c) {
+static inline uint16_t make_vga_char(char c, uint8_t color) {
+    return (uint16_t)c | ((uint16_t)color << 8);
+}
+
+void terminal_setcolor(uint8_t color) {
+    terminal_color = color;
+}
+
+void terminal_init(void) {
+    terminal_row = 0;
+    terminal_col = 0;
+    terminal_color = 0x07;
+    uint16_t* vga = (uint16_t*)VGA_BASE;
+    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
+        vga[i] = make_vga_char(' ', terminal_color);
+    }
+}
+
+void terminal_putchar(char c) {
+    uint16_t* vga = (uint16_t*)VGA_BASE;
+    
     if (c == '\n') {
-        cursor_x = 0;
-        cursor_y++;
-    } else if (c == '\r') {
-        cursor_x = 0;
-    } else if (c == '\b') {
-        if (cursor_x > 0) {
-            cursor_x--;
-            vga_buffer[cursor_y * VGA_WIDTH + cursor_x] = 0x0F00 | ' ';
-        }
-    } else {
-        vga_buffer[cursor_y * VGA_WIDTH + cursor_x] = 0x0F00 | c;
-        cursor_x++;
-    }
-    
-    if (cursor_x >= VGA_WIDTH) {
-        cursor_x = 0;
-        cursor_y++;
-    }
-    
-    if (cursor_y >= VGA_HEIGHT) {
-        /* Scroll screen */
-        int i;
-        for (i = 0; i < (VGA_HEIGHT - 1) * VGA_WIDTH; i++) {
-            vga_buffer[i] = vga_buffer[i + VGA_WIDTH];
-        }
-        /* Clear last line */
-        for (i = (VGA_HEIGHT - 1) * VGA_WIDTH; i < VGA_HEIGHT * VGA_WIDTH; i++) {
-            vga_buffer[i] = 0x0F00 | ' ';
-        }
-        cursor_y = VGA_HEIGHT - 1;
-    }
-}
-
-/* Print string */
-void print(const char* str) {
-    while (*str) {
-        print_char(*str++);
-    }
-}
-
-/* Print integer */
-void print_int(int num) {
-    char buffer[32];
-    int i = 0;
-    int is_negative = 0;
-    
-    if (num < 0) {
-        is_negative = 1;
-        num = -num;
-    }
-    
-    if (num == 0) {
-        buffer[i++] = '0';
-    } else {
-        while (num > 0) {
-            buffer[i++] = '0' + (num % 10);
-            num /= 10;
-        }
-    }
-    
-    if (is_negative) {
-        print_char('-');
-    }
-    
-    /* Reverse and print */
-    for (int j = i - 1; j >= 0; j--) {
-        print_char(buffer[j]);
-    }
-}
-
-/* Print hex */
-void print_hex(unsigned int num) {
-    char buffer[16];
-    int i = 0;
-    
-    if (num == 0) {
-        print("0x0");
+        terminal_col = 0;
+        terminal_row++;
+        if (terminal_row >= VGA_HEIGHT) terminal_row = VGA_HEIGHT - 1;
         return;
     }
     
-    while (num > 0) {
-        int digit = num % 16;
-        if (digit < 10) {
-            buffer[i++] = '0' + digit;
-        } else {
-            buffer[i++] = 'A' + (digit - 10);
-        }
-        num /= 16;
+    if (c == '\r') {
+        terminal_col = 0;
+        return;
     }
     
-    print("0x");
-    for (int j = i - 1; j >= 0; j--) {
-        print_char(buffer[j]);
+    size_t index = terminal_row * VGA_WIDTH + terminal_col;
+    vga[index] = make_vga_char(c, terminal_color);
+    
+    terminal_col++;
+    if (terminal_col >= VGA_WIDTH) {
+        terminal_col = 0;
+        terminal_row++;
+        if (terminal_row >= VGA_HEIGHT) terminal_row = VGA_HEIGHT - 1;
     }
 }
 
-/* Clear screen */
-void clear_screen(void) {
-    int i;
-    for (i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
-        vga_buffer[i] = 0x0F00 | ' ';
+void print_string(const char* str) {
+    while (*str) {
+        terminal_putchar(*str++);
     }
-    cursor_x = 0;
-    cursor_y = 0;
+}
+
+void print_int(int num) {
+    if (num < 0) {
+        terminal_putchar('-');
+        num = -num;
+    }
+    char buffer[32];
+    int i = 0;
+    if (num == 0) {
+        terminal_putchar('0');
+        return;
+    }
+    while (num > 0) {
+        buffer[i++] = '0' + (num % 10);
+        num /= 10;
+    }
+    while (i > 0) terminal_putchar(buffer[--i]);
+}
+
+void print_hex(uint32_t num) {
+    terminal_putchar('0');
+    terminal_putchar('x');
+    char buffer[16];
+    int i = 0;
+    if (num == 0) {
+        terminal_putchar('0');
+        return;
+    }
+    while (num > 0) {
+        int digit = num % 16;
+        buffer[i++] = (digit < 10) ? ('0' + digit) : ('A' + digit - 10);
+        num /= 16;
+    }
+    while (i > 0) terminal_putchar(buffer[--i]);
 }

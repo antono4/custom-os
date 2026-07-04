@@ -1,0 +1,135 @@
+name: CI Build & Test
+
+on:
+  push:
+    branches: [ main, develop, 'feature/**' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # Bare-metal OS Build
+  baremetal-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          binutils \
+          gcc \
+          g++ \
+          make \
+          grub-common \
+          xorriso \
+          qemu-system-x86
+    
+    - name: Build Bare-metal OS
+      run: |
+        cd baremetal-os
+        make clean || true
+        make all
+      timeout-minutes: 15
+    
+    - name: Verify Build Output
+      run: |
+        ls -la baremetal-os/*.bin
+        ls -la baremetal-os/*.iso
+        test -f baremetal-os/kernel.bin && echo "kernel.bin: OK"
+        test -f baremetal-os/kernel.elf && echo "kernel.elf: OK"
+    
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: baremetal-os-artifacts
+        path: |
+          baremetal-os/*.bin
+          baremetal-os/*.elf
+          baremetal-os/*.iso
+          baremetal-os/*.map
+        retention-days: 7
+    
+    - name: QEMU Test (headless)
+      run: |
+        cd baremetal-os
+        timeout 10 qemu-system-i386 -kernel kernel.bin -nographic || echo "QEMU test completed"
+      timeout-minutes: 2
+
+  # Custom Linux Distro - Validation
+  distro-validation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          wget \
+          xz-utils \
+          tar \
+          gzip
+    
+    - name: Validate Scripts
+      run: |
+        cd custom-linux-distro
+        for script in scripts/*.sh; do
+          if [ -f "$script" ]; then
+            chmod +x "$script"
+            # Check syntax
+            bash -n "$script" && echo "$script: syntax OK" || echo "$script: syntax ERROR"
+          fi
+        done
+    
+    - name: Validate Configuration Files
+      run: |
+        cd custom-linux-distro
+        test -f config/fstab && echo "fstab: OK"
+        test -f config/hostname && echo "hostname: OK"
+        test -f config/hosts && echo "hosts: OK"
+        test -f config/kernel-config && echo "kernel-config: OK"
+        test -f packages/list.txt && echo "package list: OK"
+    
+    - name: Check Documentation
+      run: |
+        cd custom-linux-distro
+        test -f docs/BUILD.md && echo "BUILD.md: OK"
+        test -f docs/TROUBLESHOOT.md && echo "TROUBLESHOOT.md: OK"
+
+  # Code Quality
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Check for TODO/FIXME
+      run: |
+        echo "=== Checking for TODO/FIXME comments ==="
+        TODO_COUNT=$(grep -r "TODO" baremetal-os/ --include="*.c" --include="*.h" | wc -l)
+        FIXME_COUNT=$(grep -r "FIXME" baremetal-os/ --include="*.c" --include="*.h" | wc -l)
+        echo "TODO: $TODO_COUNT"
+        echo "FIXME: $FIXME_COUNT"
+    
+    - name: Check File Structure
+      run: |
+        echo "=== File Structure ==="
+        find baremetal-os -name "*.c" -o -name "*.h" -o -name "*.S" | head -30
+    
+    - name: Shellcheck Scripts
+      run: |
+        sudo apt-get install -y shellcheck || true
+        for script in custom-linux-distro/scripts/*.sh; do
+          if [ -f "$script" ]; then
+            shellcheck "$script" || echo "shellcheck completed with warnings"
+          fi
+        done

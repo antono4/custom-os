@@ -3,6 +3,8 @@
 ## Deskripsi
 Proyek ini adalah panduan lengkap untuk membangun distribusi Linux kustom Anda sendiri menggunakan metodologi **Linux From Scratch (LFS)**.
 
+> **Note:** Untuk dokumentasi lengkap, lihat [README utama](../../README.md) di root repository.
+
 ## Arsitektur LFS
 
 ```

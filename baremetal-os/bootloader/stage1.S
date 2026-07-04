@@ -3,60 +3,60 @@
 ; =============================================================================
 ; Stage 1 bootloader: Loads stage 2 from disk and jumps to it
 ; Uses BIOS interrupts for disk access
+; Syntax: NASM
 
-.code16
-.section .boot
+[BITS 16]
+[ORG 0x7C00]
 
-.global _start
 _start:
     ; Save drive number
-    movb %dl, drive_num
+    mov [drive_num], dl
     
     ; Set up segments
-    xorw %ax, %ax
-    movw %ax, %ds
-    movw %ax, %ss
-    movw %ax, %es
+    xor ax, ax
+    mov ds, ax
+    mov ss, ax
+    mov es, ax
     
     ; Set stack
-    movw $0x7C00, %sp
+    mov sp, 0x7C00
     
     ; Clear screen
-    movb $0x03, %ah
-    int $0x10
+    mov ah, 0x03
+    int 0x10
     
     ; Print loading message
-    movw $msg_loading, %si
+    mov si, msg_loading
     call print_string
     
     ; Load stage 2 (15 sectors = 7680 bytes)
-    movw $0x1000, %ax
-    movw %ax, %es
-    xorw %bx, %bx
+    mov ax, 0x1000
+    mov es, ax
+    xor bx, bx
     
-    movb $0x02, %ah          ; Function: read sectors
-    movb $0x0E, %al          ; Sector count (14 sectors for stage2 + bootinfo)
-    movb $0x02, %ch          ; Cylinder 0
-    movb $0x01, %cl          ; Start from sector 2
-    movb drive_num, %dl      ; Drive number
-    xorw %dh, %dh            ; Head 0
-    int $0x13
+    mov ah, 0x02          ; Function: read sectors
+    mov al, 0x0E          ; Sector count
+    mov ch, 0x00          ; Cylinder 0
+    mov cl, 0x02          ; Start from sector 2
+    mov dl, [drive_num]   ; Drive number
+    mov dh, 0x00          ; Head 0
+    int 0x13
     jc disk_error
     
     ; Jump to stage 2
     jmp 0x0000:0x1000
 
 disk_error:
-    movw $msg_error, %si
+    mov si, msg_error
     call print_string
     jmp hang
 
 print_string:
     lodsb
-    or %al, %al
+    or al, al
     jz done
-    movb $0x0E, %ah
-    int $0x10
+    mov ah, 0x0E
+    int 0x10
     jmp print_string
 done:
     ret
@@ -64,14 +64,11 @@ done:
 hang:
     jmp hang
 
-drive_num:
-    .byte 0
+drive_num: db 0
 
-msg_loading:
-    .asciz "NanoOS: Loading...\r\n"
-msg_error:
-    .asciz "Disk read error!\r\n"
+msg_loading: db "NanoOS: Loading...", 13, 10, 0
+msg_error: db "Disk read error!", 13, 10, 0
 
 ; Padding and boot signature
-.fill 510 - (. - _start)
-.word 0xAA55
+times 510-($-$$) db 0
+dw 0xAA55

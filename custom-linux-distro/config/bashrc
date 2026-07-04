@@ -1,0 +1,36 @@
+# ~/.bashrc - User-specific bash configuration
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+# History settings
+HISTCONTROL=ignoredups:ignorespace
+HISTSIZE=1000
+HISTFILESIZE=2000
+shopt -s histappend
+
+# Check window size after each command
+shopt -s checkwinsize
+
+# Enable programmable completion
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+# Aliases
+alias ll='ls -la'
+alias la='ls -A'
+alias l='ls -CF'
+alias grep='grep --color=auto'
+
+# Custom prompt
+PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+
+# Welcome message
+echo "Welcome to Custom LFS Linux"
+echo "Kernel: $(uname -r)"
+echo ""

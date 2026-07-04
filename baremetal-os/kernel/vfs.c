@@ -3,7 +3,8 @@
  * =============================================================================
  */
 
-#include <kernel.h>
+#include "kernel.h"
+#include "memory.h"
 
 #define MAX_FILES 64
 #define MAX_FILENAME 32
@@ -58,7 +59,7 @@ static vfs_node_t* root_fs = 0;
 /* Initialize VFS */
 void vfs_init(void) {
     /* Create root directory */
-    root_fs = (vfs_node_t*)kmalloc();
+    root_fs = (vfs_node_t*)kmalloc(sizeof(vfs_node_t));
     if (root_fs) {
         root_fs->name[0] = '/';
         root_fs->name[1] = '\0';
@@ -72,7 +73,7 @@ void vfs_init(void) {
 
 /* Create a file in VFS */
 vfs_node_t* vfs_create_file(const char* name, vfs_node_t* parent) {
-    vfs_node_t* node = (vfs_node_t*)kmalloc();
+    vfs_node_t* node = (vfs_node_t*)kmalloc(sizeof(vfs_node_t));
     if (node) {
         int i = 0;
         while (name[i] && i < MAX_FILENAME - 1) {

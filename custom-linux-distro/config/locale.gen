@@ -1,0 +1,17 @@
+# /etc/locale.gen - List of supported locales
+# Uncomment the locales you need
+
+# English (US)
+en_US.UTF-8 UTF-8
+en_US ISO-8859-1
+
+# Indonesian
+id_ID.UTF-8 UTF-8
+id_ID ISO-8859-1
+
+# Other common locales
+de_DE.UTF-8 UTF-8
+fr_FR.UTF-8 UTF-8
+es_ES.UTF-8 UTF-8
+ja_JP.UTF-8 UTF-8
+zh_CN.UTF-8 UTF-8
