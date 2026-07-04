@@ -1,0 +1,23 @@
+# /etc/fstab - Static file system information
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+
+# Root filesystem
+/dev/sda2     /               ext4    defaults        1       1
+
+# Boot partition
+/dev/sda1     /boot           ext4    defaults        0       2
+
+# Swap partition
+/dev/sda3     none            swap    sw              0       0
+
+# Additional filesystems
+tmpfs         /tmp            tmpfs   defaults        0       0
+tmpfs         /var/log        tmpfs   defaults        0       0
+tmpfs         /var/tmp        tmpfs   defaults        0       0
+
+# Devtmpfs
+devtmpfs      /dev            devtmpfs mode=0755       0       0
+
+# Proc filesystem
+proc          /proc           proc    defaults        0       0
+sysfs         /sys            sysfs   defaults        0       0

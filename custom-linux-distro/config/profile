@@ -1,0 +1,28 @@
+# /etc/profile - System-wide environment and startup programs
+
+# Set path
+export PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin
+
+# Set default editor
+export EDITOR=vim
+export VISUAL=vim
+
+# Enable color support for ls
+eval "$(dircolors -b)"
+
+# Aliases
+alias ls='ls --color=auto'
+alias ll='ls -la'
+alias la='ls -A'
+
+# Locale settings
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# Prompt customization
+PS1='[\u@\h \W]\$ '
+
+# XDG Base Directory
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
