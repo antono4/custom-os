@@ -1,2 +1,26 @@
-Last updated: 2026-08-24 08:06:32 WIB
-Last updated: 2026-08-24 08:36:37 WIB
+# custom-os
+
+
+
+## 📋 Overview
+
+This repository contains **98 files** and is built with the following technologies:
+
+Not detected
+
+## 🚀 Quick Start
+
+## ✨ Features
+
+- 📝 Auto-generated documentation
+
+## 🛠️ Technologies
+
+Not detected
+
+## 📄 License
+
+MIT License
+
+---
+*Last updated: 2026-08-24 08:45:00 WIB*
